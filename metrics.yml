@@ -1,0 +1,21 @@
+metrics:
+  revenue:
+    meaning: Total product price of delivered orders, without freight
+    currency: BRL
+    sql: SUM(i.price)
+    tables: staging.stg_order_items i JOIN staging.stg_orders o ON i.order_id = o.order_id
+    filter: o.order_status = 'delivered'
+
+  average_order_value:
+    meaning: Revenue divided by the number of delivered orders
+    currency: BRL
+    sql: SUM(i.price) / COUNT(DISTINCT o.order_id)
+    tables: staging.stg_order_items i JOIN staging.stg_orders o ON i.order_id = o.order_id
+    filter: o.order_status = 'delivered'
+
+  late_delivery_rate:
+    meaning: Percentage of delivered orders that arrived after the estimated date
+    sql: 100.0 * COUNT(*) FILTER (WHERE o.is_late) / COUNT(*)
+    tables: staging.stg_orders o
+    filter: o.order_status = 'delivered' AND NOT o.is_missing_delivery_date
+    # Date rule: for monthly or yearly results, use o.purchased_at (purchase date)

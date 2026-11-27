@@ -1,0 +1,6 @@
+duckdb
+dbt-core>=1.12,<2
+dbt-duckdb
+google-genai
+python-dotenv
+streamlit

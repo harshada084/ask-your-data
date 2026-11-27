@@ -1,0 +1,13 @@
+# secrets
+.env
+# environment and cache
+.venv/
+__pycache__/
+# data and database
+data/raw/*.csv
+db/*.duckdb*
+# dbt output
+dbt_olist/target/
+dbt_olist/logs/
+logs/
+.user.yml

@@ -1,0 +1,61 @@
+question,status,ai_sql,note
+What is the total revenue?,PASS,"SELECT SUM(i.price) AS total_revenue
+FROM staging.stg_order_items i
+JOIN staging.stg_orders o ON i.order_id = o.order_id
+WHERE o.order_status = 'delivered'",
+What is the late delivery rate?,PASS,"SELECT 
+    ROUND(100.0 * COUNT(*) FILTER (WHERE is_late) / COUNT(*), 4) AS late_delivery_rate
+FROM staging.stg_orders
+WHERE order_status = 'delivered' 
+  AND NOT is_missing_delivery_date",
+How many orders are there for each order status?,PASS,"SELECT 
+    order_status, 
+    COUNT(DISTINCT order_id) AS order_count
+FROM staging.stg_orders
+GROUP BY order_status
+ORDER BY order_count DESC",
+Show monthly revenue for 2017,PASS,"SELECT 
+    strftime(o.purchased_at, '%Y-%m') AS month,
+    SUM(i.price) AS revenue
+FROM staging.stg_order_items i
+JOIN staging.stg_orders o ON i.order_id = o.order_id
+WHERE o.order_status = 'delivered'
+  AND date_part('year', o.purchased_at) = 2017
+GROUP BY 1
+ORDER BY 1",
+How many delivered orders were purchased in 2018?,PASS,"SELECT 
+    COUNT(DISTINCT o.order_id) AS delivered_orders_count
+FROM 
+    staging.stg_orders o
+WHERE 
+    o.order_status = 'delivered'
+    AND EXTRACT(YEAR FROM o.purchased_at) = 2018",
+What are the top 5 product categories by revenue? Use English category names.,PASS,"SELECT 
+    COALESCE(t.product_category_name_english, p.product_category_name) AS product_category_name_english,
+    SUM(i.price) AS revenue
+FROM staging.stg_order_items i
+JOIN staging.stg_orders o ON i.order_id = o.order_id
+JOIN raw.products p ON i.product_id = p.product_id
+LEFT JOIN raw.category_translation t ON p.product_category_name = t.product_category_name
+WHERE o.order_status = 'delivered'
+GROUP BY 1
+ORDER BY revenue DESC
+LIMIT 5;",
+Which 5 customer states have the highest late delivery rate? Show state and rate.,PASS,"SELECT 
+    c.customer_state AS state,
+    100.0 * COUNT(*) FILTER (WHERE o.is_late) / COUNT(*) AS rate
+FROM staging.stg_orders o
+JOIN raw.customers c ON o.customer_id = c.customer_id
+WHERE o.order_status = 'delivered' 
+  AND NOT o.is_missing_delivery_date
+GROUP BY c.customer_state
+ORDER BY rate DESC
+LIMIT 5;",
+What is the average review score across all reviews?,PASS,SELECT AVG(review_score) FROM raw.order_reviews,
+"What is the total payment value for each payment type, across all orders?",PASS,"SELECT 
+    payment_type,
+    SUM(payment_value) AS total_payment_value
+FROM raw.order_payments
+GROUP BY payment_type
+ORDER BY total_payment_value DESC;",
+What is the total profit?,PASS,CANNOT_ANSWER,

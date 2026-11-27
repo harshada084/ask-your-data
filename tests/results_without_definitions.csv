@@ -1,0 +1,47 @@
+question,status,ai_sql,note
+What is the total revenue?,FAIL,SELECT sum(price) FROM staging.stg_order_items,
+What is the late delivery rate?,FAIL,"SELECT 
+    CAST(SUM(CASE WHEN is_late THEN 1 ELSE 0 END) AS DOUBLE) / COUNT(*) AS late_delivery_rate
+FROM staging.stg_orders
+WHERE order_status = 'delivered' AND is_late IS NOT NULL",
+How many orders are there for each order status?,PASS,"SELECT 
+    order_status, 
+    COUNT(order_id) AS order_count
+FROM staging.stg_orders
+GROUP BY order_status
+ORDER BY order_count DESC;",
+Show monthly revenue for 2017,FAIL,"SELECT 
+    date_trunc('month', o.purchased_at) AS month,
+    sum(oi.price) AS revenue
+FROM staging.stg_orders o
+JOIN staging.stg_order_items oi ON o.order_id = oi.order_id
+WHERE date_part('year', o.purchased_at) = 2017
+GROUP BY 1
+ORDER BY 1",
+How many delivered orders were purchased in 2018?,PASS,"SELECT count(order_id) FROM staging.stg_orders WHERE order_status = 'delivered' AND date_part('year', purchased_at) = 2018",
+What are the top 5 product categories by revenue? Use English category names.,FAIL,"SELECT 
+    COALESCE(t.product_category_name_english, p.product_category_name) AS product_category_name_english,
+    SUM(oi.price) AS revenue
+FROM staging.stg_order_items oi
+JOIN raw.products p ON oi.product_id = p.product_id
+LEFT JOIN raw.category_translation t ON p.product_category_name = t.product_category_name
+GROUP BY 1
+ORDER BY revenue DESC
+LIMIT 5;",
+Which 5 customer states have the highest late delivery rate? Show state and rate.,FAIL,"SELECT 
+    c.customer_state AS state,
+    CAST(AVG(CASE WHEN o.is_late THEN 1.0 ELSE 0.0 END) AS DOUBLE) AS rate
+FROM staging.stg_orders o
+JOIN raw.customers c ON o.customer_id = c.customer_id
+WHERE o.is_late IS NOT NULL
+GROUP BY c.customer_state
+ORDER BY rate DESC, state ASC
+LIMIT 5",
+What is the average review score across all reviews?,PASS,SELECT AVG(review_score::DOUBLE) AS avg_review_score FROM raw.order_reviews,
+"What is the total payment value for each payment type, across all orders?",PASS,"SELECT 
+    payment_type,
+    SUM(payment_value) AS total_payment_value
+FROM raw.order_payments
+GROUP BY payment_type
+ORDER BY total_payment_value DESC;",
+What is the total profit?,PASS,CANNOT_ANSWER,
