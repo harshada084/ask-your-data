@@ -3,7 +3,15 @@
 Ask a business question in plain English and get the SQL, the result and, where suitable, a chart.
 Built on the Olist Brazilian e-commerce dataset.
 
-![App screenshot](docs/app.png)
+## Screenshots
+
+![Screenshot 1](docs/screenshot1.png)
+
+![Screenshot 2](docs/screenshot2.png)
+
+![Screenshot 3](docs/screenshot3.png)
+
+![Screenshot 4](docs/screenshot4.png)
 
 ## Business problem
 Managers who don't write SQL have to wait for an analyst to answer routine questions.
